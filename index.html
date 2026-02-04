@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PWA</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Fuentes y colores generales */
+        @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Roboto:wght@300;400;700&display=swap');
+        
+        :root {
+            --primary-blue: #5B9BD5;
+            --primary-green: #70AD47;
+            --primary-purple: #A074C4;
+            --primary-orange: #ED7D31;
+            --bg-header: #3E5F8A;
+            --bg-row1: #DCE6F1;
+            --bg-row2: #EBF1DE;
+            --bg-row3: #E4DFEC;
+            --bg-row4: #FDE9D9;
+            --bg-row5: #D9F0D3;
+            --bg-row6: #FAD7D7;
+            --bg-row7: #DCE9F5;
+            --brush-border: 8px solid transparent;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f4f7f6;
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%239C92AC' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            font-family: 'Permanent Marker', cursive;
+            font-size: 4em;
+            text-align: center;
+            color: #2c3e50;
+            text-shadow: 4px 4px 2px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 8px;
+            background: linear-gradient(to right, var(--primary-blue), var(--primary-green), var(--primary-purple), var(--primary-orange));
+            border-radius: 4px;
+        }
+
+        /* Contenedor principal del cuadro */
+        .cuadro {
+            display: grid;
+            grid-template-columns: 180px repeat(4, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 1200px;
+            background: #fff;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Fondo decorativo con pinceladas */
+        .cuadro::before {
+            content: '';
+            position: absolute;
+            top: -20px;
+            left: -20px;
+            right: -20px;
+            bottom: -20px;
+            z-index: -1;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 800'%3E%3Cdefs%3E%3Cfilter id='a'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.02' numOctaves='3' result='noise'%2F%3E%3CfeDisplacementMap in='SourceGraphic' in2='noise' scale='10'%2F%3E%3C/filter%3E%3C/defs%3E%3Cg filter='url(%23a)'%3E%3Cpath fill='%235B9BD5' opacity='.2' d='M-50,50 Q200,10 450,70 T900,40 Q1100,20 1250,60 L1250,-50 L-50,-50 Z'/%3E%3Cpath fill='%2370AD47' opacity='.2' d='M-50,150 Q200,110 450,170 T900,140 Q1100,120 1250,160 L1250,50 L-50,50 Z'/%3E%3Cpath fill='%23A074C4' opacity='.2' d='M-50,250 Q200,210 450,270 T900,240 Q1100,220 1250,260 L1250,150 L-50,150 Z'/%3E%3Cpath fill='%23ED7D31' opacity='.2' d='M-50,350 Q200,310 450,370 T900,340 Q1100,320 1250,360 L1250,250 L-50,250 Z'/%3E%3C/g%3E%3C/svg%3E");
+            background-size: cover;
+            opacity: 0.5;
+        }
+
+
+        /* Estilos de celdas */
+        .cell {
+            padding: 20px;
+            border-radius: 15px;
+            position: relative;
+            border: 3px solid #e0e0e0;
+            background-color: #fff;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.05);
+        }
+        
+        .cell:hover {
+            transform: translateY(-5px);
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.1);
+            z-index: 2;
+        }
+
+        /* Encabezados de Columna */
+        .header-cell {
+            color: white;
+            font-weight: bold;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            border: none;
+            box-shadow: 4px 4px 12px rgba(0,0,0,0.2);
+        }
+
+        .header-cell i {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .header-cell.col1 { background-color: var(--bg-header); }
+        .header-cell.col2 { background: linear-gradient(135deg, var(--primary-blue), #7FBCF4); }
+        .header-cell.col3 { background: linear-gradient(135deg, var(--primary-green), #92D050); }
+        .header-cell.col4 { background: linear-gradient(135deg, var(--primary-purple), #B19CD9); }
+        .header-cell.col5 { background: linear-gradient(135deg, var(--primary-orange), #F4B183); }
+
+        /* Encabezados de Fila */
+        .row-header {
+            display: flex;
+            align-items: center;
+            font-weight: bold;
+            color: #333;
+            font-size: 1.1em;
+            border: none;
+            background-color: transparent;
+            box-shadow: none;
+            justify-content: flex-start;
+        }
+
+        .row-header i {
+            font-size: 1.8em;
+            margin-right: 15px;
+            padding: 10px;
+            border-radius: 50%;
+            color: white;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.2);
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Colores para iconos de fila */
+        .row-def i { background-color: #3498db; }
+        .row-tec i { background-color: #2ecc71; }
+        .row-ins i { background-color: #9b59b6; }
+        .row-car i { background-color: #f1c40f; }
+        .row-ven i { background-color: #e67e22; }
+        .row-des i { background-color: #e74c3c; }
+        .row-eje i { background-color: #95a5a6; }
+
+
+        /* Colores de Fondo de Filas */
+        .row-def { background-color: var(--bg-row1); border-color: #B0C4DE; }
+        .row-tec { background-color: var(--bg-row2); border-color: #C3D69B; }
+        .row-ins { background-color: var(--bg-row3); border-color: #CCC1DA; }
+        .row-car { background-color: var(--bg-row4); border-color: #FABF8F; }
+        .row-ven { background-color: var(--bg-row5); border-color: #A8D08D; }
+        .row-des { background-color: var(--bg-row6); border-color: #E6B8B7; }
+        .row-eje { background-color: var(--bg-row7); border-color: #B4C6E7; }
+
+
+        /* Estilos de Texto y Listas */
+        p {
+            margin: 0;
+            line-height: 1.5;
+            font-size: 0.95em;
+            color: #555;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        li {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: flex-start;
+            line-height: 1.4;
+            font-size: 0.9em;
+        }
+
+        li i {
+            margin-right: 8px;
+            margin-top: 3px;
+        }
+        
+        .check-icon { color: var(--primary-green); }
+        .x-icon { color: #e74c3c; }
+        .dot-icon { color: var(--primary-blue); font-size: 0.7em; margin-top: 7px; }
+        .globe-icon, .wifi-icon { color: var(--primary-blue); }
+        .cogs-icon { color: var(--primary-purple); }
+        .mobile-icon, .apple-icon, .android-icon, .whatsapp-icon, .spotify-icon { color: var(--primary-green); }
+        .twitter-icon { color: #1DA1F2; }
+        .pinterest-icon { color: #BD081C; }
+        .uber-icon { color: #000000; }
+        .google-icon { color: #4285F4; }
+        .trello-icon { color: #0079BF; }
+        .amazon-icon { color: #FF9900; }
+        .sap-icon { color: #003366; }
+
+    </style>
+</head>
+<body>
+
+
+
+    <div class="cuadro">
+        <div class="cell header-cell col1"></div>
+        <div class="cell header-cell col2">
+            <i class="fas fa-globe"></i>
+        
+        </div>
+        <div class="cell header-cell col3">
+            <i class="fas fa-mobile-alt"></i>
+
+        </div>
+        <div class="cell header-cell col4">
+            <i class="fas fa-tablet-alt"></i>
+     
+        </div>
+        <div class="cell header-cell col5">
+            <i class="fas fa-network-wired"></i>
+
+        </div>
+
+        <div class="cell row-header row-def">
+            <i class="fas fa-book"></i>
+   
+        </div>
+        <div class="cell row-def">
+
+        </div>
+        <div class="cell row-def">
+          
+        <div class="cell row-def">
+
+        </div>
+        <div class="cell row-def">
+
+        </div>
+
+        <div class="cell row-header row-tec">
+            <i class="fas fa-code"></i>
+
+        </div>
+        <div class="cell row-tec">
+
+        </div>
+        <div class="cell row-tec">
+
+        </div>
+        <div class="cell row-tec">
+
+        </div>
+        <div class="cell row-tec">
+
+        </div>
+
+        <div class="cell row-header row-ins">
+            <i class="fas fa-download"></i>
+
+        </div>
+        <div class="cell row-ins">
+  
+        </div>
+        <div class="cell row-ins">
+
+        </div>
+        <div class="cell row-ins">
+
+        </div>
+        <div class="cell row-ins">
+           
+        </div>
+
+        <div class="cell row-header row-car">
+            <i class="fas fa-star"></i>
+
+        </div>
+        <div class="cell row-car">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-car">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-car">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-car">
+            <ul>
+
+            </ul>
+        </div>
+
+        <div class="cell row-header row-ven">
+            <i class="fas fa-thumbs-up"></i>
+
+        </div>
+        <div class="cell row-ven">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-ven">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-ven">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-ven">
+            <ul>
+
+            </ul>
+        </div>
+
+        <div class="cell row-header row-des">
+            <i class="fas fa-thumbs-down"></i>
+
+        </div>
+        <div class="cell row-des">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-des">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-des">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-des">
+            <ul>
+
+            </ul>
+        </div>
+
+        <div class="cell row-header row-eje">
+            <i class="far fa-lightbulb"></i>
+
+        </div>
+        <div class="cell row-eje">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-eje">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-eje">
+            <ul>
+
+            </ul>
+        </div>
+        <div class="cell row-eje">
+            <ul>
+                
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const cells = document.querySelectorAll('.cell:not(.header-cell):not(.row-header)');
+            cells.forEach(cell => {
+                cell.addEventListener('mouseenter', () => {
+                    cell.style.zIndex = '10';
+                });
+                cell.addEventListener('mouseleave', () => {
+                    setTimeout(() => {
+                        cell.style.zIndex = '1';
+                    }, 300);
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>
