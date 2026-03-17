@@ -113,32 +113,45 @@
         </nav>
     </section>
 
-    <section id="add-pet-screen" class="screen hidden">
-        <header class="sub-header">
-            <i class="fas fa-arrow-left" onclick="navTo('home-screen')"></i>
-            <h3>Pet Details</h3>
-        </header>
-        <div class="add-photo-circle">
-            <img id="preview-img" src="https://via.placeholder.com/150" alt="Pet">
-        </div>
-        <form id="add-pet-form">
-            <label>Name</label>
-            <input type="text" id="pet-name" placeholder="Pet's Name" required>
-            <label>Color</label>
-            <input type="text" id="pet-color" placeholder="Pet's Color">
-            <label>Genre</label>
-            <select id="pet-genre">
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-            </select>
-            <label>Age</label>
-            <input type="text" id="pet-age" placeholder="Pet's Age">
-            <label>Description (Bio)</label>
-            <textarea id="pet-desc" placeholder="About your pet..."></textarea>
+<section id="add-pet-screen" class="screen hidden">
+    <header class="sub-header">
+        <i class="fas fa-arrow-left" onclick="navTo('home-screen')"></i>
+        <h3>Pet Details</h3>
+    </header>
 
-            <button type="submit" class="btn-primary">Add Pet</button>
-        </form>
-    </section>
+    <div class="add-photo-circle" onclick="document.getElementById('pet-file-input').click()" style="cursor: pointer; position: relative;">
+        <img id="preview-img" src="https://static.thenounproject.com/png/13421-200.png" alt="Pet" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+        <div style="position: absolute; bottom: 5px; right: 5px; background: var(--primary-orange); color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white;">
+            <i class="fas fa-camera"></i>
+        </div>
+        <input type="file" id="pet-file-input" accept="image/*" style="display: none;">
+    </div>
+
+    <form id="add-pet-form">
+        <label>Name</label>
+        <input type="text" id="pet-name" placeholder="Pet's Name" required>
+        
+        <label>Breed / Type</label>
+        <input type="text" id="pet-breed" placeholder="Ej. Golden Retriever / Mixed" required>
+
+        <label>Color</label>
+        <input type="text" id="pet-color" placeholder="Pet's Color">
+        
+        <label>Genre</label>
+        <select id="pet-genre">
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+        </select>
+
+        <label>Age</label>
+        <input type="text" id="pet-age" placeholder="Pet's Age">
+
+        <label>Description (Bio)</label>
+        <textarea id="pet-desc" placeholder="About your pet..."></textarea>
+
+        <button type="submit" class="btn-primary">Add Pet</button>
+    </form>
+</section>
 
     <section id="pet-detail-screen" class="screen hidden">
         <div class="detail-image-container">

@@ -3,8 +3,10 @@
 // ==========================================
 const BACKEND_URL = "https://pwa-backend-tarh.vercel.app";
 const stripeAPI = Stripe("pk_test_51T2ymfGTQu1cMhAHq1rupNpg7cadOsRLcnsMenfjXyb28wWnp6PNIgFyICickjSQUrUHLiC3TLlzDjWBqZDU5rHH00CFPexfLX");
+const DEFAULT_IMAGE = "https://placehold.co/150?text=Pet+Photo"; // Nueva alternativa funcional
+
 let elements;
-let currentImageBase64 = "https://via.placeholder.com/150";
+let currentImageBase64 = DEFAULT_IMAGE;
 
 // ==========================================
 // LÓGICA DE NAVEGACIÓN Y PANTALLAS
@@ -35,7 +37,7 @@ let navTo = function(screenId) {
 // FLUJO DE INICIO (Splash Screen + Sesión)
 // ==========================================
 window.onload = () => {
-    // Analítico: Respetamos tu Splash Screen por 2.5 segundos
+    // Respetamos tu Splash Screen por 2.5 segundos antes de evaluar sesión
     setTimeout(() => {
         const userId = localStorage.getItem('userId');
         if (userId) {
@@ -45,15 +47,12 @@ window.onload = () => {
         }
     }, 2500);
 
-    // Programamos el Logout en el avatar que ya tienes en el HTML
+    // Logout programado en el avatar del Home
     const avatar = document.querySelector('.user-avatar');
     if (avatar) {
         avatar.style.cursor = "pointer";
-        avatar.title = "Cerrar Sesión";
         avatar.onclick = () => {
-            if(confirm("¿Deseas cerrar tu sesión?")) {
-                handleLogout();
-            }
+            if(confirm("¿Deseas cerrar tu sesión?")) handleLogout();
         };
     }
 };
@@ -62,6 +61,7 @@ window.onload = () => {
 // LÓGICA DE LOGIN Y REGISTRO (MONGODB)
 // ==========================================
 
+// --- LOGIN ---
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -97,6 +97,7 @@ if (loginForm) {
     });
 }
 
+// --- REGISTRO ---
 const registerForm = document.getElementById('register-form');
 if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
@@ -140,15 +141,11 @@ function handleLogout() {
     navTo('login-screen');
 }
 
-function toggleChat() {
-    const chat = document.getElementById('chatbot-overlay');
-    chat.classList.toggle('hidden');
-}
-
 // ==========================================
-// LÓGICA DE MASCOTAS (CON DUEÑO ASIGNADO)
+// LÓGICA DE MASCOTAS (IMAGEN + BACKEND)
 // ==========================================
 
+// 1. Manejo de la foto (clic en círculo abre galería)
 const previewImg = document.getElementById('preview-img');
 if (previewImg) {
     previewImg.addEventListener('click', () => {
@@ -168,6 +165,7 @@ if (previewImg) {
     });
 }
 
+// 2. Cargar mascotas desde el servidor
 async function loadPets() {
     try {
         const res = await fetch(`${BACKEND_URL}/pets`);
@@ -178,6 +176,7 @@ async function loadPets() {
     }
 }
 
+// 3. Renderizar en el Feed y en "My Pets"
 function renderPets(pets) {
     const feed = document.getElementById('pet-feed');
     const miniList = document.getElementById('my-pets-list-mini');
@@ -187,56 +186,61 @@ function renderPets(pets) {
     if (miniList) miniList.innerHTML = '';
 
     pets.forEach(pet => {
-        // 1. Renderizar en el feed general (Todas las mascotas)
+        const petImg = pet.image || DEFAULT_IMAGE;
+
+        // Feed General
         const card = document.createElement('div');
         card.className = 'pet-card';
         card.style.cssText = "background: white; border-radius: 15px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: pointer;";
         card.innerHTML = `
-            <img src="${pet.image || 'https://via.placeholder.com/150'}" alt="pet" style="width: 100%; height: 200px; object-fit: cover;">
+            <img src="${petImg}" alt="pet" style="width: 100%; height: 200px; object-fit: cover;">
             <div class="pet-card-info" style="padding: 15px;">
                 <h4 style="margin: 0; font-size: 1.2rem;">${pet.name}</h4>
-                <p style="margin: 5px 0 0 0; color: gray;">${pet.genre} • ${pet.age}</p>
+                <p style="margin: 5px 0 0 0; color: gray;">${pet.genre} • ${pet.breed || 'Sin raza'}</p>
             </div>
         `;
         card.onclick = () => viewPetDetail(pet);
         if (feed) feed.appendChild(card);
 
-        // 2. Renderizar en "My Pets" SOLO si el ownerId coincide con el usuario actual
-        if (pet.ownerId === currentUserId) {
+        // My Pets (Solo las del usuario logueado)
+        if (pet.ownerId === currentUserId && miniList) {
             const avatar = document.createElement('div');
             avatar.className = 'circle';
             avatar.style.cssText = "width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid var(--primary-orange); cursor: pointer; flex-shrink: 0; margin-right: 10px;";
-            avatar.innerHTML = `<img src="${pet.image || 'https://via.placeholder.com/150'}" alt="pet" style="width: 100%; height: 100%; object-fit: cover;">`;
+            avatar.innerHTML = `<img src="${petImg}" alt="pet" style="width: 100%; height: 100%; object-fit: cover;">`;
             avatar.onclick = () => viewPetDetail(pet);
-            if (miniList) miniList.appendChild(avatar);
+            miniList.appendChild(avatar);
         }
     });
 }
 
+// 4. Detalle de la mascota
 function viewPetDetail(pet) {
-    document.getElementById('detail-img').src = pet.image || 'https://via.placeholder.com/150';
+    document.getElementById('detail-img').src = pet.image || DEFAULT_IMAGE;
     document.getElementById('detail-name').innerText = pet.name;
-    document.getElementById('detail-breed').innerText = `${pet.genre} • ${pet.color}`;
+    document.getElementById('detail-breed').innerText = `${pet.genre} • ${pet.breed || pet.color}`;
     document.getElementById('detail-desc').innerText = pet.desc || "Sin descripción.";
     navTo('pet-detail-screen');
 }
 
+// 5. Guardar nueva mascota
 const addPetForm = document.getElementById('add-pet-form');
 if(addPetForm) {
     addPetForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = addPetForm.querySelector('button');
-        btn.innerText = "Guardando...";
+        btn.innerText = "Guardando en la nube...";
         btn.disabled = true;
 
         const newPet = {
             name: document.getElementById('pet-name').value,
+            breed: document.getElementById('pet-breed') ? document.getElementById('pet-breed').value : "", // Soporte para el campo breed
             color: document.getElementById('pet-color').value,
             genre: document.getElementById('pet-genre').value,
             age: document.getElementById('pet-age').value,
             desc: document.getElementById('pet-desc').value,
             image: currentImageBase64,
-            ownerId: localStorage.getItem('userId') // Analítico: Ahora la mascota tiene dueño
+            ownerId: localStorage.getItem('userId')
         };
 
         try {
@@ -246,11 +250,11 @@ if(addPetForm) {
                 body: JSON.stringify(newPet)
             });
             addPetForm.reset();
-            currentImageBase64 = "https://via.placeholder.com/150";
-            previewImg.src = currentImageBase64;
+            currentImageBase64 = DEFAULT_IMAGE;
+            if(previewImg) previewImg.src = DEFAULT_IMAGE;
             navTo('home-screen');
         } catch (error) {
-            alert("Error al guardar la mascota.");
+            alert("Error al guardar en el servidor.");
         } finally {
             btn.innerText = "Add Pet";
             btn.disabled = false;
@@ -261,13 +265,9 @@ if(addPetForm) {
 // ==========================================
 // LÓGICA DE PAGOS (STRIPE)
 // ==========================================
-
 async function startDonation() {
     const amountInput = document.getElementById("custom-amount").value;
-    if (!amountInput || amountInput <= 0) {
-        alert("Ingresa un monto válido.");
-        return;
-    }
+    if (!amountInput || amountInput <= 0) return alert("Ingresa un monto válido.");
 
     const btnLoad = document.querySelector("#amount-container button");
     btnLoad.innerText = "Conectando...";
@@ -291,7 +291,7 @@ async function startDonation() {
         document.getElementById("payment-form").style.display = "block";
         document.getElementById("submit").innerText = `Donar $${amountInput}.00 MXN`;
     } catch (error) {
-        alert("Error con Stripe.");
+        alert("Error con la pasarela de pagos.");
     } finally {
         btnLoad.innerText = "Generar Formato de Pago";
         btnLoad.disabled = false;
@@ -321,4 +321,9 @@ if(paymentForm) {
             submitBtn.disabled = false;
         }
     });
+}
+
+function toggleChat() {
+    const chat = document.getElementById('chatbot-overlay');
+    if(chat) chat.classList.toggle('hidden');
 }
