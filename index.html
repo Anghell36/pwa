@@ -9,6 +9,8 @@
     <link rel="manifest" href="manifest.json">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <script src="https://js.stripe.com/v3/"></script>
 </head>
 
 <body>
@@ -62,6 +64,12 @@
             <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
         </header>
 
+        <div style="margin-bottom: 20px;">
+            <button onclick="navTo('donate-screen')" style="width: 100%; padding: 15px; background-color: var(--pink); color: white; border: none; border-radius: 10px; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                <i class="fas fa-hand-holding-heart"></i> Apoyar a mascotas sin hogar
+            </button>
+        </div>
+
         <div class="search-bar">
             <input type="text" placeholder="Search for pets in your zone">
             <i class="fas fa-search"></i>
@@ -70,8 +78,7 @@
         <div class="banner-my-pets">
             <div class="banner-content">
                 <h3>My Pets</h3>
-                <button onclick="navTo('add-pet-screen')" class="btn-small white"><i class="fas fa-camera"></i> New
-                    Pet</button>
+                <button onclick="navTo('add-pet-screen')" class="btn-small white"><i class="fas fa-camera"></i> New Pet</button>
             </div>
             <div class="my-pets-avatars" id="my-pets-list-mini">
             </div>
@@ -247,14 +254,13 @@
         </div>
         <nav class="bottom-nav">
             <a href="#" onclick="navTo('home-screen')"><i class="fas fa-home"></i></a>
-            <a href="#" onclick="navTo('donate-screen')"><i class="fas fa-hand-holding-heart"></i></a>
             <a href="#" onclick="navTo('calendar-screen')" class="active"><i class="fas fa-calendar-alt"></i></a>
             <a href="#" onclick="navTo('vaccine-screen')"><i class="fas fa-syringe"></i></a>
             <a href="#" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></a>
         </nav>
     </section>
 
-<section id="donate-screen" class="screen hidden">
+    <section id="donate-screen" class="screen hidden">
         <div class="auth-header">
             <i class="fas fa-heart big-paw" style="color: var(--pink);"></i>
             <h2>Donar a Centros</h2>
@@ -287,7 +293,6 @@
         src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
 
     <script src="app.js"></script>
-    <script src="https://js.stripe.com/v3/"></script>
 </body>
 
 </html>
