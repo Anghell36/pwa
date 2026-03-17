@@ -1,8 +1,10 @@
 // ==========================================
 // CONFIGURACIÓN PRINCIPAL
 // ==========================================
-// Esta es la URL de tu servidor en Vercel
 const BACKEND_URL = "https://pwa-backend-tarh.vercel.app";
+const stripeAPI = Stripe("pk_test_51T2ymfGTQu1cMhAHq1rupNpg7cadOsRLcnsMenfjXyb28wWnp6PNIgFyICickjSQUrUHLiC3TLlzDjWBqZDU5rHH00CFPexfLX");
+let elements;
+let currentImageBase64 = "https://via.placeholder.com/150";
 
 // ==========================================
 // LÓGICA DE NAVEGACIÓN Y PANTALLAS
@@ -30,20 +32,36 @@ let navTo = function(screenId) {
 };
 
 // ==========================================
-// LÓGICA DE LOGIN Y REGISTRO (MONGODB)
+// FLUJO DE INICIO (Splash Screen + Sesión)
 // ==========================================
-
-// Evaluar al abrir la app si ya hay alguien logueado
 window.onload = () => {
-    const userId = localStorage.getItem('userId');
-    if (userId) {
-        navTo('home-screen'); 
-    } else {
-        navTo('login-screen'); 
+    // Analítico: Respetamos tu Splash Screen por 2.5 segundos
+    setTimeout(() => {
+        const userId = localStorage.getItem('userId');
+        if (userId) {
+            navTo('home-screen'); 
+        } else {
+            navTo('login-screen'); 
+        }
+    }, 2500);
+
+    // Programamos el Logout en el avatar que ya tienes en el HTML
+    const avatar = document.querySelector('.user-avatar');
+    if (avatar) {
+        avatar.style.cursor = "pointer";
+        avatar.title = "Cerrar Sesión";
+        avatar.onclick = () => {
+            if(confirm("¿Deseas cerrar tu sesión?")) {
+                handleLogout();
+            }
+        };
     }
 };
 
-// --- LOGIN ---
+// ==========================================
+// LÓGICA DE LOGIN Y REGISTRO (MONGODB)
+// ==========================================
+
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
     loginForm.addEventListener('submit', async (e) => {
@@ -64,7 +82,7 @@ if (loginForm) {
             const data = await res.json();
             
             if (res.ok) {
-                localStorage.setItem('userId', data.userId); // Guardamos la sesión
+                localStorage.setItem('userId', data.userId);
                 loginForm.reset();
                 navTo('home-screen');
             } else {
@@ -79,18 +97,14 @@ if (loginForm) {
     });
 }
 
-// --- REGISTRO ---
 const registerForm = document.getElementById('register-form');
 if (registerForm) {
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-        
-        // Obtenemos los valores usando los IDs de tu HTML
         const email = document.getElementById('reg-email').value;
         const username = document.getElementById('reg-user').value;
         const fullName = document.getElementById('reg-name').value;
         const password = document.getElementById('reg-pass').value;
-        
         const btn = registerForm.querySelector('button');
         
         btn.innerText = "Creando cuenta...";
@@ -100,16 +114,15 @@ if (registerForm) {
             const res = await fetch(`${BACKEND_URL}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                // Enviamos los 4 campos al backend
                 body: JSON.stringify({ email, username, fullName, password })
             });
             const data = await res.json();
             
             if (res.ok) {
                 alert("¡Cuenta creada exitosamente!");
-                localStorage.setItem('userId', data.userId); // Iniciamos sesión automáticamente
+                localStorage.setItem('userId', data.userId);
                 registerForm.reset();
-                navTo('home-screen'); // Lo mandamos al feed de mascotas
+                navTo('home-screen');
             } else {
                 alert(data.error || "Error al crear la cuenta.");
             }
@@ -122,23 +135,20 @@ if (registerForm) {
     });
 }
 
-// Función para cerrar sesión
 function handleLogout() {
     localStorage.removeItem('userId');
     navTo('login-screen');
 }
-// Función para mostrar/ocultar el chatbot
+
 function toggleChat() {
     const chat = document.getElementById('chatbot-overlay');
     chat.classList.toggle('hidden');
 }
 
 // ==========================================
-// LÓGICA DE MASCOTAS (CONECTADA A MONGODB)
+// LÓGICA DE MASCOTAS (CON DUEÑO ASIGNADO)
 // ==========================================
-let currentImageBase64 = "https://via.placeholder.com/150"; // Imagen por defecto
 
-// 1. Subir una foto al hacer clic en el círculo de "Add Pet"
 const previewImg = document.getElementById('preview-img');
 if (previewImg) {
     previewImg.addEventListener('click', () => {
@@ -158,27 +168,26 @@ if (previewImg) {
     });
 }
 
-// 2. Descargar las mascotas desde Vercel (GET)
 async function loadPets() {
     try {
         const res = await fetch(`${BACKEND_URL}/pets`);
         const pets = await res.json();
         renderPets(pets);
     } catch (error) {
-        console.error("Error al cargar mascotas desde el servidor:", error);
+        console.error("Error al cargar mascotas:", error);
     }
 }
 
-// 3. Dibujar las mascotas en el HTML
 function renderPets(pets) {
     const feed = document.getElementById('pet-feed');
     const miniList = document.getElementById('my-pets-list-mini');
+    const currentUserId = localStorage.getItem('userId');
     
     if (feed) feed.innerHTML = '';
     if (miniList) miniList.innerHTML = '';
 
     pets.forEach(pet => {
-        // Tarjeta grande del feed
+        // 1. Renderizar en el feed general (Todas las mascotas)
         const card = document.createElement('div');
         card.className = 'pet-card';
         card.style.cssText = "background: white; border-radius: 15px; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); cursor: pointer;";
@@ -192,17 +201,18 @@ function renderPets(pets) {
         card.onclick = () => viewPetDetail(pet);
         if (feed) feed.appendChild(card);
 
-        // Circulo pequeño de "My Pets"
-        const avatar = document.createElement('div');
-        avatar.className = 'circle';
-        avatar.style.cssText = "width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid var(--primary-orange); cursor: pointer;";
-        avatar.innerHTML = `<img src="${pet.image || 'https://via.placeholder.com/150'}" alt="pet" style="width: 100%; height: 100%; object-fit: cover;">`;
-        avatar.onclick = () => viewPetDetail(pet);
-        if (miniList) miniList.appendChild(avatar);
+        // 2. Renderizar en "My Pets" SOLO si el ownerId coincide con el usuario actual
+        if (pet.ownerId === currentUserId) {
+            const avatar = document.createElement('div');
+            avatar.className = 'circle';
+            avatar.style.cssText = "width: 60px; height: 60px; border-radius: 50%; overflow: hidden; border: 2px solid var(--primary-orange); cursor: pointer; flex-shrink: 0; margin-right: 10px;";
+            avatar.innerHTML = `<img src="${pet.image || 'https://via.placeholder.com/150'}" alt="pet" style="width: 100%; height: 100%; object-fit: cover;">`;
+            avatar.onclick = () => viewPetDetail(pet);
+            if (miniList) miniList.appendChild(avatar);
+        }
     });
 }
 
-// 4. Ver los detalles de una mascota específica
 function viewPetDetail(pet) {
     document.getElementById('detail-img').src = pet.image || 'https://via.placeholder.com/150';
     document.getElementById('detail-name').innerText = pet.name;
@@ -211,13 +221,12 @@ function viewPetDetail(pet) {
     navTo('pet-detail-screen');
 }
 
-// 5. Enviar una mascota nueva a Vercel (POST)
 const addPetForm = document.getElementById('add-pet-form');
 if(addPetForm) {
     addPetForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         const btn = addPetForm.querySelector('button');
-        btn.innerText = "Guardando en la nube...";
+        btn.innerText = "Guardando...";
         btn.disabled = true;
 
         const newPet = {
@@ -226,7 +235,8 @@ if(addPetForm) {
             genre: document.getElementById('pet-genre').value,
             age: document.getElementById('pet-age').value,
             desc: document.getElementById('pet-desc').value,
-            image: currentImageBase64
+            image: currentImageBase64,
+            ownerId: localStorage.getItem('userId') // Analítico: Ahora la mascota tiene dueño
         };
 
         try {
@@ -235,14 +245,12 @@ if(addPetForm) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(newPet)
             });
-            alert("¡Mascota guardada en la base de datos con éxito!");
             addPetForm.reset();
             currentImageBase64 = "https://via.placeholder.com/150";
             previewImg.src = currentImageBase64;
-            navTo('home-screen'); // Esto llamará a loadPets() automáticamente
+            navTo('home-screen');
         } catch (error) {
-            console.error("Error al guardar:", error);
-            alert("Hubo un error al guardar la mascota en la nube.");
+            alert("Error al guardar la mascota.");
         } finally {
             btn.innerText = "Add Pet";
             btn.disabled = false;
@@ -250,28 +258,23 @@ if(addPetForm) {
     });
 }
 
-
 // ==========================================
 // LÓGICA DE PAGOS (STRIPE)
 // ==========================================
-const stripeAPI = Stripe("pk_test_51T2ymfGTQu1cMhAHq1rupNpg7cadOsRLcnsMenfjXyb28wWnp6PNIgFyICickjSQUrUHLiC3TLlzDjWBqZDU5rHH00CFPexfLX"); // <--- ¡NO OLVIDES CAMBIAR ESTO!
-let elements;
 
 async function startDonation() {
     const amountInput = document.getElementById("custom-amount").value;
-    
     if (!amountInput || amountInput <= 0) {
-        alert("Por favor ingresa un monto válido mayor a $0.");
+        alert("Ingresa un monto válido.");
         return;
     }
 
     const btnLoad = document.querySelector("#amount-container button");
-    btnLoad.innerText = "Conectando con el banco...";
+    btnLoad.innerText = "Conectando...";
     btnLoad.disabled = true;
 
     try {
         const amountInCents = Math.round(parseFloat(amountInput) * 100);
-
         const res = await fetch(`${BACKEND_URL}/create-payment-intent`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -279,20 +282,16 @@ async function startDonation() {
         });
         
         const { clientSecret } = await res.json();
-
         elements = stripeAPI.elements({ clientSecret });
         const paymentElement = elements.create("payment");
-        
         document.getElementById("payment-element").innerHTML = ""; 
         paymentElement.mount("#payment-element");
 
         document.getElementById("amount-container").style.display = "none";
         document.getElementById("payment-form").style.display = "block";
         document.getElementById("submit").innerText = `Donar $${amountInput}.00 MXN`;
-
     } catch (error) {
-        console.error("Error Stripe:", error);
-        alert("Hubo un error al conectar con el servidor de pagos.");
+        alert("Error con Stripe.");
     } finally {
         btnLoad.innerText = "Generar Formato de Pago";
         btnLoad.disabled = false;
@@ -304,10 +303,8 @@ if(paymentForm) {
     paymentForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         const submitBtn = document.getElementById("submit");
-        const originalText = submitBtn.innerText;
-        
         submitBtn.disabled = true;
-        submitBtn.innerText = "Procesando pago...";
+        submitBtn.innerText = "Procesando...";
 
         try {
             const { error } = await stripeAPI.confirmPayment({
@@ -316,16 +313,12 @@ if(paymentForm) {
                     return_url: window.location.origin + window.location.pathname, 
                 },
             });
-
             if (error) {
                 document.getElementById("error-message").textContent = error.message;
                 submitBtn.disabled = false;
-                submitBtn.innerText = originalText;
             }
         } catch (err) {
-            document.getElementById("error-message").textContent = "Ocurrió un error inesperado al procesar.";
             submitBtn.disabled = false;
-            submitBtn.innerText = originalText;
         }
     });
 }
