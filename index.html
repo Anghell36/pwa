@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyPet - Closer to your friend</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+
+<body>
+
+    <section id="splash-screen" class="screen active">
+        <div class="logo-container">
+            <h1>My<br><span class="orange-text">Pet</span></h1>
+            <i class="fas fa-paw paw-icon"></i>
+        </div>
+        <p class="slogan">closer to your friend</p>
+    </section>
+
+    <section id="login-screen" class="screen hidden">
+        <div class="auth-header">
+            <i class="fas fa-paw big-paw"></i>
+            <h2>Login</h2>
+        </div>
+        <form id="login-form">
+            <label>Email</label>
+            <input type="email" id="login-email" placeholder="hello@reallygreatsite.com" required>
+            <label>Password</label>
+            <input type="password" id="login-pass" placeholder="******" required>
+            <button type="submit" class="btn-primary">Login</button>
+        </form>
+        <p class="auth-link">Not have account? <a href="#" onclick="navTo('register-screen')">Signup here</a></p>
+    </section>
+
+    <section id="register-screen" class="screen hidden">
+        <div class="auth-header">
+            <i class="fas fa-paw big-paw"></i>
+            <h2>Create your account</h2>
+        </div>
+        <form id="register-form">
+            <label>Email</label>
+            <input type="email" id="reg-email" placeholder="hello@reallygreatsite.com" required>
+            <label>Username</label>
+            <input type="text" id="reg-user" placeholder="User021" required>
+            <label>Full name</label>
+            <input type="text" id="reg-name" placeholder="User Name" required>
+            <label>Password</label>
+            <input type="password" id="reg-pass" placeholder="******" required>
+            <button type="submit" class="btn-primary">Create Account</button>
+        </form>
+        <p class="auth-link">Already have an account? <a href="#" onclick="navTo('login-screen')">Login here</a></p>
+    </section>
+
+    <section id="home-screen" class="screen hidden">
+        <header class="app-header">
+            <button class="menu-btn"><i class="fas fa-bars"></i></button>
+            <div class="logo-small"> <i class="fas fa-paw"></i> MY PET</div>
+            <div class="user-avatar"><i class="fas fa-user-circle"></i></div>
+        </header>
+
+        <div class="search-bar">
+            <input type="text" placeholder="Search for pets in your zone">
+            <i class="fas fa-search"></i>
+        </div>
+
+        <div class="banner-my-pets">
+            <div class="banner-content">
+                <h3>My Pets</h3>
+                <button onclick="navTo('add-pet-screen')" class="btn-small white"><i class="fas fa-camera"></i> New
+                    Pet</button>
+            </div>
+            <div class="my-pets-avatars" id="my-pets-list-mini">
+            </div>
+        </div>
+
+        <div class="categories">
+            <h4>Categories <span class="show-all">Show All</span></h4>
+            <div class="cat-icons">
+                <div class="cat-item">
+                    <div class="circle"><img src="https://img.icons8.com/color/48/cat.png" alt="cat"></div>
+                    <span>Cat</span>
+                </div>
+                <div class="cat-item">
+                    <div class="circle"><img src="https://img.icons8.com/color/48/dog.png" alt="dog"></div>
+                    <span>Dog</span>
+                </div>
+                <div class="cat-item">
+                    <div class="circle"><img src="https://img.icons8.com/color/48/rabbit.png" alt="rabbit"></div>
+                    <span>Rabbit</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="feed" id="pet-feed">
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="#" onclick="navTo('home-screen')" class="active"><i class="fas fa-home"></i></a>
+            <a href="#" onclick="navTo('calendar-screen')"><i class="fas fa-calendar-alt"></i></a>
+            <a href="#" onclick="navTo('vaccine-screen')"><i class="fas fa-syringe"></i></a>
+            <a href="#" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></a>
+        </nav>
+    </section>
+
+    <section id="add-pet-screen" class="screen hidden">
+        <header class="sub-header">
+            <i class="fas fa-arrow-left" onclick="navTo('home-screen')"></i>
+            <h3>Pet Details</h3>
+        </header>
+        <div class="add-photo-circle">
+            <img id="preview-img" src="https://via.placeholder.com/150" alt="Pet">
+        </div>
+        <form id="add-pet-form">
+            <label>Name</label>
+            <input type="text" id="pet-name" placeholder="Pet's Name" required>
+            <label>Color</label>
+            <input type="text" id="pet-color" placeholder="Pet's Color">
+            <label>Genre</label>
+            <select id="pet-genre">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+            <label>Age</label>
+            <input type="text" id="pet-age" placeholder="Pet's Age">
+            <label>Description (Bio)</label>
+            <textarea id="pet-desc" placeholder="About your pet..."></textarea>
+
+            <button type="submit" class="btn-primary">Add Pet</button>
+        </form>
+    </section>
+
+    <section id="pet-detail-screen" class="screen hidden">
+        <div class="detail-image-container">
+            <i class="fas fa-arrow-left back-icon" onclick="navTo('home-screen')"></i>
+            <img id="detail-img" src="" alt="Pet Detail">
+        </div>
+        <div class="detail-card">
+            <div class="detail-header">
+                <div>
+                    <h2 id="detail-name">Name</h2>
+                    <p id="detail-breed">Raza / Tipo</p>
+                </div>
+                <div class="heart-btn"><i class="fas fa-heart"></i></div>
+            </div>
+            <div class="detail-info">
+                <h4>Detalles</h4>
+                <p id="detail-desc">Descripción...</p>
+                <h4>Alimentación</h4>
+                <p>The materials used are premium. Suitable for everyday use.</p>
+            </div>
+            <div class="share-buttons">
+                <h4>Share</h4>
+                <div class="social-icons">
+                    <i class="fab fa-facebook f-blue"></i>
+                    <i class="fab fa-facebook-messenger f-blue"></i>
+                    <i class="fab fa-instagram f-pink"></i>
+                    <i class="fab fa-whatsapp f-green"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="vaccine-screen" class="screen hidden">
+        <header class="sub-header">
+            <i class="fas fa-arrow-left" onclick="navTo('home-screen')"></i>
+            <h3>Vacunación</h3>
+        </header>
+        <div class="vaccine-hero">
+            <i class="fas fa-syringe"></i>
+            <h2>Programa de Vacunación</h2>
+        </div>
+        <div class="vaccine-table-container">
+            <table class="vaccine-table">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Vacuna</th>
+                        <th>Firma Vet</th>
+                        <th>Revacuna</th>
+                    </tr>
+                </thead>
+                <tbody id="vaccine-list">
+                    <tr>
+                        <td>12/01/25</td>
+                        <td>Rabia</td>
+                        <td>Dr. Simi</td>
+                        <td>12/01/26</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <nav class="bottom-nav">
+            <a href="#" onclick="navTo('home-screen')"><i class="fas fa-home"></i></a>
+            <a href="#" onclick="navTo('calendar-screen')"><i class="fas fa-calendar-alt"></i></a>
+            <a href="#" onclick="navTo('vaccine-screen')" class="active"><i class="fas fa-syringe"></i></a>
+            <a href="#" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></a>
+        </nav>
+    </section>
+
+    <section id="calendar-screen" class="screen hidden">
+        <header class="sub-header">
+            <i class="fas fa-arrow-left" onclick="navTo('home-screen')"></i>
+            <h3>Calendario</h3>
+        </header>
+        <div class="calendar-container">
+            <h2 class="month-title">Febrero 2025</h2>
+            <div class="calendar-grid">
+                <div class="day-name">DOM</div>
+                <div class="day-name">LUN</div>
+                <div class="day-name">MAR</div>
+                <div class="day-name">MIÉ</div>
+                <div class="day-name">JUE</div>
+                <div class="day-name">VIE</div>
+                <div class="day-name">SÁB</div>
+
+                <div class="day"></div>
+                <div class="day"></div>
+                <div class="day"></div>
+                <div class="day"></div>
+                <div class="day"></div>
+                <div class="day"></div>
+                <div class="day">01</div>
+                <div class="day">02</div>
+                <div class="day orange-bg">03</div>
+                <div class="day">04</div>
+                <div class="day">05</div>
+                <div class="day">06</div>
+                <div class="day">07</div>
+                <div class="day">08</div>
+            </div>
+
+            <h2 class="month-title" style="margin-top:20px;">Agenda Semanal</h2>
+            <div class="agenda-list">
+                <div class="agenda-item">
+                    <span>Lunes</span>
+                    <div class="bar"></div>
+                </div>
+                <div class="agenda-item">
+                    <span>Martes</span>
+                    <div class="bar"></div>
+                </div>
+            </div>
+        </div>
+        <nav class="bottom-nav">
+            <a href="#" onclick="navTo('home-screen')"><i class="fas fa-home"></i></a>
+            <a href="#" onclick="navTo('donate-screen')"><i class="fas fa-hand-holding-heart"></i></a>
+            <a href="#" onclick="navTo('calendar-screen')" class="active"><i class="fas fa-calendar-alt"></i></a>
+            <a href="#" onclick="navTo('vaccine-screen')"><i class="fas fa-syringe"></i></a>
+            <a href="#" onclick="toggleChat()"><i class="fas fa-comment-dots"></i></a>
+        </nav>
+    </section>
+
+<section id="donate-screen" class="screen hidden">
+        <div class="auth-header">
+            <i class="fas fa-heart big-paw" style="color: var(--pink);"></i>
+            <h2>Donar a Centros</h2>
+        </div>
+        <div style="padding: 20px; text-align: center;">
+            <p style="margin-bottom: 20px;">Tu aporte ayuda a miles de mascotas sin hogar. Dona $50.00 MXN de forma segura.</p>
+            
+            <form id="payment-form" style="background: var(--gray-bg); padding: 15px; border-radius: 10px;">
+                <div id="payment-element"></div>
+                <button id="submit" class="btn-primary" style="margin-top: 20px; width: 100%; padding: 15px; border: none; border-radius: 10px; background-color: var(--primary-orange); color: white; font-weight: bold; cursor: pointer;">
+                    Donar $50.00 MXN
+                </button>
+                <div id="error-message" style="color: red; margin-top: 10px;"></div>
+            </form>
+            <br>
+            <button onclick="navTo('home-screen')" style="background: none; border: none; color: gray; text-decoration: underline; cursor: pointer;">Volver al inicio</button>
+        </div>
+    </section>
+
+    <div id="chatbot-overlay" class="hidden">
+        <button class="close-chat-btn" onclick="toggleChat()">
+            <i class="fas fa-times"></i>
+        </button>
+        <zapier-interfaces-chatbot-embed is-popup='false' chatbot-id='cmlg6odgb000op0fvburqjbqw' height='315%'
+            width='100%'>
+        </zapier-interfaces-chatbot-embed>
+    </div>
+
+    <script async type='module'
+        src='https://interfaces.zapier.com/assets/web-components/zapier-interfaces/zapier-interfaces.esm.js'></script>
+
+    <script src="app.js"></script>
+    <script src="https://js.stripe.com/v3/"></script>
+</body>
+
+</html>
