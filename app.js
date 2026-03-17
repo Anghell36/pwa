@@ -307,18 +307,37 @@ if(paymentForm) {
         submitBtn.innerText = "Procesando...";
 
         try {
-            const { error } = await stripeAPI.confirmPayment({
+            // Analítico: Agregamos redirect: "if_required" para que no recargue la PWA
+            const { error, paymentIntent } = await stripeAPI.confirmPayment({
                 elements,
                 confirmParams: {
                     return_url: window.location.origin + window.location.pathname, 
                 },
+                redirect: "if_required" // <--- LA MAGIA ESTÁ AQUÍ
             });
+
             if (error) {
+                // Si la tarjeta falla (fondos insuficientes, etc.)
                 document.getElementById("error-message").textContent = error.message;
                 submitBtn.disabled = false;
+                submitBtn.innerText = "Reintentar Pago";
+            } else if (paymentIntent && paymentIntent.status === "succeeded") {
+                // ¡PAGO EXITOSO!
+                alert("¡Gracias por tu donación! El pago se ha realizado con éxito. 🐾");
+                
+                // Limpiamos el formulario para futuras donaciones
+                document.getElementById("payment-form").style.display = "none";
+                document.getElementById("amount-container").style.display = "block";
+                document.getElementById("custom-amount").value = 50;
+                submitBtn.disabled = false;
+                
+                // Navegamos suavemente al Home sin recargar la página
+                navTo('home-screen');
             }
         } catch (err) {
+            document.getElementById("error-message").textContent = "Ocurrió un error inesperado.";
             submitBtn.disabled = false;
+            submitBtn.innerText = "Reintentar Pago";
         }
     });
 }
