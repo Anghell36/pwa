@@ -260,20 +260,29 @@
         </nav>
     </section>
 
-    <section id="donate-screen" class="screen hidden">
+<section id="donate-screen" class="screen hidden">
         <div class="auth-header">
             <i class="fas fa-heart big-paw" style="color: var(--pink);"></i>
             <h2>Donar a Centros</h2>
         </div>
         <div style="padding: 20px; text-align: center;">
-            <p style="margin-bottom: 20px;">Tu aporte ayuda a miles de mascotas sin hogar. Dona $50.00 MXN de forma segura.</p>
+            <p style="margin-bottom: 20px;">Tu aporte ayuda a miles de mascotas sin hogar.</p>
             
-            <form id="payment-form" style="background: var(--gray-bg); padding: 15px; border-radius: 10px;">
-                <div id="payment-element"></div>
-                <button id="submit" class="btn-primary" style="margin-top: 20px; width: 100%; padding: 15px; border: none; border-radius: 10px; background-color: var(--primary-orange); color: white; font-weight: bold; cursor: pointer;">
-                    Donar $50.00 MXN
+            <div id="amount-container" style="margin-bottom: 20px; background: var(--gray-bg); padding: 20px; border-radius: 10px;">
+                <label style="font-weight: bold; font-size: 1.1rem;">¿Cuánto deseas donar? (MXN)</label><br>
+                <input type="number" id="custom-amount" value="50" min="10" style="width: 100%; padding: 15px; margin-top: 15px; border-radius: 5px; border: 1px solid #ccc; font-size: 1.5rem; text-align: center; font-weight: bold;">
+                
+                <button type="button" onclick="startDonation()" style="margin-top: 20px; width: 100%; padding: 15px; border: none; border-radius: 10px; background-color: var(--primary-orange); color: white; font-weight: bold; font-size: 1.1rem; cursor: pointer;">
+                    Generar Formato de Pago
                 </button>
-                <div id="error-message" style="color: red; margin-top: 10px;"></div>
+            </div>
+            
+            <form id="payment-form" style="background: var(--gray-bg); padding: 15px; border-radius: 10px; display: none;">
+                <div id="payment-element"></div>
+                <button id="submit" class="btn-primary" style="margin-top: 20px; width: 100%; padding: 15px; border: none; border-radius: 10px; background-color: #0097B2; color: white; font-weight: bold; font-size: 1.1rem; cursor: pointer;">
+                    Confirmar Donación
+                </button>
+                <div id="error-message" style="color: red; margin-top: 15px; font-weight: bold;"></div>
             </form>
             <br>
             <button onclick="navTo('home-screen')" style="background: none; border: none; color: gray; text-decoration: underline; cursor: pointer;">Volver al inicio</button>

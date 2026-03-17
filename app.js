@@ -131,63 +131,98 @@ setTimeout(() => navTo('login-screen'), 2000);
 // --- LÓGICA DE PAGOS STRIPE (DONACIONES) ---
 // ==========================================
 
-// Inicializar Stripe con tu Publishable Key (reemplaza con tu llave PÚBLICA de Stripe)
-const stripeAPI = Stripe("pk_test_tu_llave_publica_aqui");
+// ¡RECUERDA PONER TU LLAVE PÚBLICA DE STRIPE AQUÍ! (Empieza con pk_test_...)
+const stripeAPI = Stripe("pk_test_51T2ymfGTQu1cMhAHq1rupNpg7cadOsRLcnsMenfjXyb28wWnp6PNIgFyICickjSQUrUHLiC3TLlzDjWBqZDU5rHH00CFPexfLX"); 
 let elements;
 
-// Función para inicializar el formulario cuando el usuario entra a donar
-async function initStripePayment() {
+// Esta función se llama al presionar "Generar Formato de Pago"
+async function startDonation() {
+    const amountInput = document.getElementById("custom-amount").value;
+    
+    // Validación mínima de $10 pesos
+    if (!amountInput || amountInput < 10) {
+        alert("Por favor ingresa un monto válido (mínimo $10 MXN).");
+        return;
+    }
+
+    const btnLoad = document.querySelector("#amount-container button");
+    btnLoad.innerText = "Conectando con el banco...";
+    btnLoad.disabled = true;
+
     try {
-        // CAMBIA ESTA URL POR TU ENLACE REAL DE VERCEL
+        // Convertimos los pesos a centavos (ej. 150 pesos = 15000 centavos)
+        const amountInCents = Math.round(parseFloat(amountInput) * 100);
+
         const res = await fetch("https://pwa-backend-tarh.vercel.app/create-payment-intent", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ amount: 5000 }), // $50.00 MXN en centavos
+            body: JSON.stringify({ amount: amountInCents }),
         });
         
         const { clientSecret } = await res.json();
 
-        // Montar los elementos visuales de tarjeta de crédito
+        // Montamos la tarjeta
         elements = stripeAPI.elements({ clientSecret });
         const paymentElement = elements.create("payment");
         
-        // Limpiar por si ya había uno cargado antes y montarlo
         document.getElementById("payment-element").innerHTML = ""; 
         paymentElement.mount("#payment-element");
 
+        // Ocultamos el cuadro de cantidad y mostramos la tarjeta
+        document.getElementById("amount-container").style.display = "none";
+        document.getElementById("payment-form").style.display = "block";
+        document.getElementById("submit").innerText = `Donar $${amountInput}.00 MXN`;
+
     } catch (error) {
-        console.error("Error inicializando Stripe:", error);
-        document.getElementById("error-message").textContent = "Error al conectar con el servidor de pagos.";
+        console.error("Error Stripe:", error);
+        alert("Hubo un error al conectar con el servidor de pagos.");
+    } finally {
+        // Regresamos el botón a la normalidad por si hay error
+        btnLoad.innerText = "Generar Formato de Pago";
+        btnLoad.disabled = false;
     }
 }
 
-// Manejar el envío del formulario de pago
+// Manejar el clic en "Confirmar Donación"
 document.getElementById("payment-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    document.getElementById("submit").disabled = true;
-    document.getElementById("submit").innerText = "Procesando...";
+    const submitBtn = document.getElementById("submit");
+    const originalText = submitBtn.innerText;
+    
+    submitBtn.disabled = true;
+    submitBtn.innerText = "Procesando pago...";
 
-    // Confirmar el pago
-    const { error } = await stripeAPI.confirmPayment({
-        elements,
-        confirmParams: {
-            return_url: window.location.origin + "/index.html", // A donde ir tras el éxito
-        },
-    });
+    try {
+        // Confirmar pago
+        const { error } = await stripeAPI.confirmPayment({
+            elements,
+            confirmParams: {
+                // Asegura regresar al inicio tras un pago exitoso
+                return_url: window.location.origin + window.location.pathname, 
+            },
+        });
 
-    if (error) {
-        // Si la tarjeta falla
-        document.getElementById("error-message").textContent = error.message;
-        document.getElementById("submit").disabled = false;
-        document.getElementById("submit").innerText = "Donar $50.00 MXN";
+        // Si hay error (fondos insuficientes, tarjeta declinada, etc)
+        if (error) {
+            document.getElementById("error-message").textContent = error.message;
+            submitBtn.disabled = false;
+            submitBtn.innerText = originalText;
+        }
+    } catch (err) {
+        document.getElementById("error-message").textContent = "Ocurrió un error inesperado al procesar.";
+        submitBtn.disabled = false;
+        submitBtn.innerText = originalText;
     }
 });
 
-// Interceptar la función navTo original para inicializar Stripe solo cuando entramos a donate-screen
+// Reseteamos la pantalla cada vez que el usuario entra a Donar
 const _originalNavTo = navTo;
 navTo = function(screenId) {
-    _originalNavTo(screenId); // Llama a tu función original para ocultar/mostrar pantallas
+    _originalNavTo(screenId); 
     if (screenId === 'donate-screen') {
-        initStripePayment(); // Solo carga Stripe si el usuario decide donar
+        document.getElementById("amount-container").style.display = "block";
+        document.getElementById("payment-form").style.display = "none";
+        document.getElementById("error-message").textContent = "";
+        document.getElementById("custom-amount").value = 50; // Valor sugerido por defecto
     }
 };
