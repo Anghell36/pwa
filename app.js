@@ -8,24 +8,20 @@ const BACKEND_URL = "https://pwa-backend-tarh.vercel.app";
 // LÓGICA DE NAVEGACIÓN Y PANTALLAS
 // ==========================================
 let navTo = function(screenId) {
-    // 1. Ocultar todas las pantallas
     document.querySelectorAll('.screen').forEach(s => {
         s.classList.remove('active');
         s.classList.add('hidden');
     });
     
-    // 2. Mostrar la pantalla solicitada
     const target = document.getElementById(screenId);
     if (target) {
         target.classList.remove('hidden');
         target.classList.add('active');
     }
 
-    // 3. Casos especiales al cambiar de pantalla
     if (screenId === 'home-screen') {
-        loadPets(); // Recargar las mascotas desde la base de datos al ir al inicio
+        loadPets(); 
     } else if (screenId === 'donate-screen') {
-        // Resetear la pantalla de donación
         document.getElementById("amount-container").style.display = "block";
         document.getElementById("payment-form").style.display = "none";
         document.getElementById("error-message").textContent = "";
@@ -33,6 +29,104 @@ let navTo = function(screenId) {
     }
 };
 
+// ==========================================
+// LÓGICA DE LOGIN Y REGISTRO (MONGODB)
+// ==========================================
+
+// Evaluar al abrir la app si ya hay alguien logueado
+window.onload = () => {
+    const userId = localStorage.getItem('userId');
+    if (userId) {
+        navTo('home-screen'); 
+    } else {
+        navTo('login-screen'); 
+    }
+};
+
+// --- LOGIN ---
+const loginForm = document.getElementById('login-form');
+if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('login-email').value;
+        const password = document.getElementById('login-pass').value;
+        const btn = loginForm.querySelector('button');
+        
+        btn.innerText = "Verificando...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                localStorage.setItem('userId', data.userId); // Guardamos la sesión
+                loginForm.reset();
+                navTo('home-screen');
+            } else {
+                alert(data.error || "Error al iniciar sesión.");
+            }
+        } catch (error) {
+            alert("No se pudo conectar con el servidor.");
+        } finally {
+            btn.innerText = "Login";
+            btn.disabled = false;
+        }
+    });
+}
+
+// --- REGISTRO ---
+const registerForm = document.getElementById('register-form');
+if (registerForm) {
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Obtenemos los valores usando los IDs de tu HTML
+        const email = document.getElementById('reg-email').value;
+        const username = document.getElementById('reg-user').value;
+        const fullName = document.getElementById('reg-name').value;
+        const password = document.getElementById('reg-pass').value;
+        
+        const btn = registerForm.querySelector('button');
+        
+        btn.innerText = "Creando cuenta...";
+        btn.disabled = true;
+
+        try {
+            const res = await fetch(`${BACKEND_URL}/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                // Enviamos los 4 campos al backend
+                body: JSON.stringify({ email, username, fullName, password })
+            });
+            const data = await res.json();
+            
+            if (res.ok) {
+                alert("¡Cuenta creada exitosamente!");
+                localStorage.setItem('userId', data.userId); // Iniciamos sesión automáticamente
+                registerForm.reset();
+                navTo('home-screen'); // Lo mandamos al feed de mascotas
+            } else {
+                alert(data.error || "Error al crear la cuenta.");
+            }
+        } catch (error) {
+            alert("No se pudo conectar con el servidor.");
+        } finally {
+            btn.innerText = "Create Account";
+            btn.disabled = false;
+        }
+    });
+}
+
+// Función para cerrar sesión
+function handleLogout() {
+    localStorage.removeItem('userId');
+    navTo('login-screen');
+}
 // Función para mostrar/ocultar el chatbot
 function toggleChat() {
     const chat = document.getElementById('chatbot-overlay');
@@ -156,16 +250,11 @@ if(addPetForm) {
     });
 }
 
-// Cargar las mascotas apenas se abre la aplicación
-window.onload = () => {
-    loadPets();
-};
-
 
 // ==========================================
 // LÓGICA DE PAGOS (STRIPE)
 // ==========================================
-const stripeAPI = Stripe("pk_test_TU_LLAVE_PUBLICA_AQUI_POR_FAVOR"); // <--- ¡NO OLVIDES CAMBIAR ESTO!
+const stripeAPI = Stripe("pk_test_51T2ymfGTQu1cMhAHq1rupNpg7cadOsRLcnsMenfjXyb28wWnp6PNIgFyICickjSQUrUHLiC3TLlzDjWBqZDU5rHH00CFPexfLX"); // <--- ¡NO OLVIDES CAMBIAR ESTO!
 let elements;
 
 async function startDonation() {
